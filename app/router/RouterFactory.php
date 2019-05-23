@@ -17,6 +17,9 @@ final class RouterFactory
 	{
 		$router = new RouteList;
 		$router->addRoute('<presenter>/<action>[/<id>]', 'Homepage:default');
+		//$router->addRoute('<presenter>/order/detail<action> ? id=<orderId>', 'Order:detail');
+		//$router->addRoute('<presenter=Order>/<action=detail>/<id=orderId>');
+		//$router->addRoute('/<action><id>', 'Order:detail');
 		return $router;
 	}
 }
