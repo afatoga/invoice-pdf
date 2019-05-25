@@ -16,10 +16,10 @@ final class RouterFactory
 	public static function createRouter(): RouteList
 	{
 		$router = new RouteList;
+		//$router->addRoute('moje-objednavky', 'Order:customerOrderList');
+		//$router->addRoute('objednavka/<id>', 'Order:detail');
 		$router->addRoute('<presenter>/<action>[/<id>]', 'Homepage:default');
-		//$router->addRoute('<presenter>/order/detail<action> ? id=<orderId>', 'Order:detail');
-		//$router->addRoute('<presenter=Order>/<action=detail>/<id=orderId>');
-		//$router->addRoute('/<action><id>', 'Order:detail');
+		
 		return $router;
 	}
 }

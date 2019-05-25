@@ -7,7 +7,7 @@ namespace App\Presenters;
 use Nette;
 
 
-final class OrderPresenter extends Nette\Application\UI\Presenter
+final class ProductPresenter extends Nette\Application\UI\Presenter
 {
       /** @var Nette\Database\Context */
       private $database;
