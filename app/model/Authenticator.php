@@ -26,7 +26,8 @@ class Authenticator implements NS\IAuthenticator
         }
         
         $nettePasswords = new NS\Passwords;
-		if ($password != $row['HashedPassword']) { //!$nettePasswords->verify($password, $row->HashedPassword)
+        if (!$nettePasswords->verify($password, $row['HashedPassword'])) 
+        {
 			throw new NS\AuthenticationException('Invalid password.');
         }
         

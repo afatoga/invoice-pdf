@@ -12,7 +12,6 @@ use Nette;
 use Nette\Application\UI\Form;
 use App\Model\Authenticator;
 use App\Model\Registrator;
-use Nette\Security\User;
 
 
 final class SignPresenter extends Nette\Application\UI\Presenter
@@ -60,13 +59,21 @@ final class SignPresenter extends Nette\Application\UI\Presenter
     {   
         $credentials = [];
         if ($values->password == $values->passwordAgain) {
-        $registrator = new Registrator ($this->database);
-        $credentials = [$values->email, $values->password];
-        $registrator->register($credentials);
 
-        //login
-        $this->getUser()->login($values->email, $values->password);
-        $this->redirect('Product:index');
+            try {
+                $registrator = new Registrator ($this->database);
+                $credentials = [$values->email, $values->password];
+                $registrator->register($credentials);
+        
+                //login
+                $this->getUser()->login($values->email, $values->password);
+                $this->redirect('Product:index');
+    
+            } catch (Nette\Application\BadRequestException $e) {
+                $form->addError($e->getMessage());
+            }
+
+       
         }
         
     }

@@ -23,13 +23,14 @@ class Registrator
         WHERE Email = ?', $username);
         $row = $row->fetch();
 		if ($row) {
-			throw new Exception('Uživatel s tímto emailem je již registrován.');
+            throw new Nette\Application\BadRequestException('Uživatel s tímto emailem je již registrován.');
         }
 
         else {
             $nettePasswords = new NS\Passwords;
             $hashedPassword = $nettePasswords->hash($password);
-            $row = $this->database->query('INSERT INTO vm_user (Email, HashedPassword) VALUES (?, ?)', $username, $hashedPassword);
+            $row = $this->database->query('INSERT INTO vm_user (Email, HashedPassword) VALUES (?, ?)', 
+            $username, $hashedPassword);
         }
 	}
 }
