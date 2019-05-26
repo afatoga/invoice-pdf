@@ -17,7 +17,7 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
           $this->database = $database;
       }
 
-      public function renderIndex(): void
+      public function renderList(): void
       { 
         $user = $this->getUser();
         echo $user->isLoggedIn() ? 'ano' : 'ne';

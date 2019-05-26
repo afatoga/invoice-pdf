@@ -1,0 +1,42 @@
+/*!
+ * Start Bootstrap - Blog Post (https://startbootstrap.com/template-overviews/blog-post)
+ * Copyright 2013-2019 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-blog-post/blob/master/LICENSE)
+ */
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+  }
+  body {
+    padding-top: 56px;
+    margin-bottom: 80px; /* Margin bottom by footer height */
+  }
+  .footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 80px; /* Set the fixed height of the footer here */
+    line-height: 80px; /* Vertically center the text there */
+    background-color: #343a40;
+  }
+  
+  /*
+  ------------------------------------------------------
+  
+  @media (min-width: 768px) {
+    #sidebar {
+        position: fixed;
+    }
+  }
+  */
+  .navbar {
+    background-color: #151727;
+    font-size:1.1rem;
+  }
+  
+  div.mx-auto img { height: auto; max-width: 100%; 
+    display:block; margin: 0 auto;}
+  

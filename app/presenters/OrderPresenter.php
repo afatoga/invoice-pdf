@@ -19,16 +19,40 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
       public function renderIndex(): void
       { 
-        //vsechny objednavky
-        $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                                            vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
-                                            FROM vm_order 
-                                            LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                                            LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id');
-        $this->template->posts = $orderList;
+        $user = $this->getUser();
+        if ($user->isLoggedIn()) {
+          if ($user->isInRole('admin')) {
+            //vypisuju vsechny objednavky
+            $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
+                          vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
+                          FROM vm_order 
+                          LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
+                          LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id');
+                          $this->template->posts = $orderList;
+          }
+          else {
+            //vypisuju objednavky konkretniho uzivatele
+            $customerId = $user->getId();
+            //var_dump($customerId);
+            $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
+                         vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
+                         FROM vm_order 
+                         LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
+                         LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
+                         WHERE vm_order.CustomerId = ?', $customerId);
+            $this->template->posts = $orderList;
+            //$customerRoles = implode(',', $user->getRoles());
+            //var_dump($customerRoles);
+            $this->template->customerId = $customerId;
+          }
+        }
+        else {
+          $this->redirect('Sign:in');
+        }   
+        
       }
 
-      public function renderCustomerOrderList(int $id = 0): void
+      /*public function renderCustomerOrderList(int $id = 0): void
       { 
         $user = $this->getUser();
         echo $user->isLoggedIn() ? 'ano' : 'ne';
@@ -46,7 +70,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                                             LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                                             WHERE vm_order.customerId = ?', $customerId);
         $this->template->posts = $orderList;
-      }
+      }*/
 
       public function renderDetail(int $id = 0): void
       { 

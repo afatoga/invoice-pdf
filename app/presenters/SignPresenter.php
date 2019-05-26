@@ -36,6 +36,18 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         echo 'hello';
     }
 
+    public function actionOut(): void 
+    {   
+        $user = $this->getUser();
+        if ($user->isLoggedIn()) {
+            $this->getUser()->logout();
+            $this->redirect('Homepage:default');
+            }
+        else {
+            $this->flashMessage('Nejste přihlášen.');
+        }
+    }
+
 
     protected function createComponentSignUpForm(): Form
     {
@@ -104,5 +116,7 @@ final class SignPresenter extends Nette\Application\UI\Presenter
            
         }
     }
+
+   
 
 }
