@@ -17,7 +17,7 @@
 
         <td>{$post->Title}</td>
 		<td class="date">{$post->InsertTime|date:'F j, Y'}</td>
-		<td class="detail"><a href="/www/order/detail={$post->Id}">Detail objednávky</a></td>
+		<td class="detail"><a href="{link Order:detail $post->Id}">Detail objednávky</a></td>
     </tr>
     {/foreach}
 	</table>

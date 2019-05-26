@@ -28,8 +28,15 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         $this->template->posts = $orderList;
       }
 
-      public function renderCustomerOrderList(): void
+      public function renderCustomerOrderList(int $id = 0): void
       { 
+        $user = $this->getUser();
+        echo $user->isLoggedIn() ? 'ano' : 'ne';
+        echo $user->getId();
+        if (in_array('member', $user->getRoles())) {
+          echo ',jsem member';
+        }
+        //var_dump($user);
         // get customer Id from session?
         $customerId = 2;
         $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
