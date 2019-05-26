@@ -19,6 +19,15 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
 
       public function renderIndex(): void
       { 
+        $user = $this->getUser();
+        echo $user->isLoggedIn() ? 'ano' : 'ne';
+        //var_dump($user->getRoles());
+        if (in_array('member', $user->getRoles())) {
+          echo ',jsem jen member';
+        }
+        if (in_array('admin', $user->getRoles())) {
+          echo ',jsem admin';
+        }
         //vsechny objednavky
         $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
                                             vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 

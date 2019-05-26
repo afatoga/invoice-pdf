@@ -16,40 +16,28 @@ class Authenticator implements NS\IAuthenticator
 
 	function authenticate(array $credentials): NS\IIdentity
 	{
-		list($username, $password) = $credentials;
-		$row = $this->database->table('vm_user')
-			->where('Email', $username)->fetch();
-
+        list($email, $password) = $credentials;
+        $row = $this->database->query('SELECT Id, Email, HashedPassword, RoleId
+        FROM vm_user
+        WHERE Email = ?', $email);
+        $row = $row->fetch();
 		if (!$row) {
 			throw new NS\AuthenticationException('User not found.');
-		}
-        //var_dump($row);
+        }
+        
         $nettePasswords = new NS\Passwords;
-		if ($password != $row->HashedPassword) { //!$nettePasswords->verify($password, $row->HashedPassword)
+		if ($password != $row['HashedPassword']) { //!$nettePasswords->verify($password, $row->HashedPassword)
 			throw new NS\AuthenticationException('Invalid password.');
-		}
+        }
+        
+        $role = '';
+        if ($row['RoleId'] == 1) {
+            $role = 'admin'; 
+        }
+        else {
+            $role = 'member';
+        }
 
-		return new NS\Identity($row->id, $row->role);
+		return new NS\Identity($row['Id'], $role, ['email' => $row['Email']]);
 	}
 }
-
-    /*
-    public function authenticate(array $credentials)
-    {
-        $username = $credentials[self::USERNAME];
-        $password = sha1($credentials[self::PASSWORD] . $credentials[self::USERNAME]);
-
-        // přečteme záznam o uživateli z databáze
-        $row = dibi::fetch('SELECT realname, password FROM users WHERE login=%s', $username);
-
-        if (!$row) { // uživatel nenalezen?
-            throw new AuthenticationException("User '$username' not found.", self::IDENTITY_NOT_FOUND);
-        }
-
-        if ($row->password !== $password) { // hesla se neshodují?
-            throw new AuthenticationException("Invalid password.", self::INVALID_CREDENTIAL);
-        }
-
-        return new Identity($row->realname); // vrátíme identitu
-    }
-    */
