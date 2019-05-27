@@ -1,16 +1,15 @@
 {block content}
 
-	{if $user->isInRole('member')} <h2>Moje objednávky</h2>
-	{else} <h2>Všechny objednávky</h2>{/if}
-
-	{if !empty($posts->result)}
-	<table>
+	{if $user->isInRole('member')} <h2 class='mt-4'>Moje objednávky</h2>
+	{else} <h2 class='mt-4'>Všechny objednávky</h2>{/if}
+	
+	{if !empty($posts)}
+	<table class='mt-4 table table-bordered'>
      {foreach $posts as $post}
     <tr class="post">
         
-
-        <td>{$post->Email}</td>
-
+		<td>{$post->Id}</td>
+        {if $user->isInRole('admin')}<td>{$post->Email}</td>{/if}
         <td>{$post->Title}</td>
 		<td class="date">{$post->InsertTime|date:'F j, Y'}</td>
 		<td class="detail"><a href="{link Order:detail $post->Id}">Detail objednávky</a></td>
@@ -18,7 +17,7 @@
     {/foreach}
 	</table>
 	{else}
-	Nemáte žádné objednávky.
+	<p class='mt-4'>Nemáte žádné objednávky.</p>
 	{/if}
 
 

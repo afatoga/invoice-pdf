@@ -11,28 +11,25 @@
 <body>
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="#">Invoice-PDF</a>
+      <a class="navbar-brand" n:href="Homepage:default">Invoice-PDF</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home
-              <span class="sr-only">(current)</span>
+          <li class="nav-item">
+            <a class="nav-link" n:href="Homepage:default">Úvodní
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">About</a>
+          {if $user->isInRole('admin')}<li class="nav-item">
+            <a class="nav-link" n:href="Product:index">Produkty</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Contact</a>
-          </li>
+          {/if}
 		 
 		  {if $user->isLoggedIn()}
+      <li class="nav-item">
+            <a class="nav-link" n:href="Order:index">Moje objednávky</a>
+          </li>
 			<li class="nav-item">
             <a class="nav-link" n:href="Sign:Out">Odhlásit se</a>
           </li>{else}
@@ -49,22 +46,27 @@
 
 	  <!-- Page Content -->
   <div class="container">
-
+  <div n:foreach="$flashes as $flash" n:class="alert, alert-warning, flash, $flash->type" role="alert">{$flash->message}</div>
     <div class="row">
 
       <!-- Post Content Column -->
       <div class="col-lg-8">
-
-	 <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">{$flash->message}</div>
+	 
 	{include content}
 
 	</div>
+  <!-- Right Sidebar 
+  <div class="col-md-4">
+  <p>Invoice-PDF</p>
+  </div>
+  -->
+
 	</div>
 	</div>
 
-	 <footer class="py-5 bg-dark">
+	 <footer class="footer">
     <div class="container">
-      <p class="m-0 text-center text-white">Copyright &copy; Your Website 2019</p>
+      <p class="m-0 text-center text-white">Copyright &copy; Invoice-PDF 2019</p>
     </div>
     <!-- /.container -->
   </footer>

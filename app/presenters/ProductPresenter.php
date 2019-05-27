@@ -17,37 +17,22 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
           $this->database = $database;
       }
 
-      public function renderList(): void
+      public function renderIndex(): void
       { 
         $user = $this->getUser();
-        echo $user->isLoggedIn() ? 'ano' : 'ne';
-        //var_dump($user->getRoles());
-        if (in_array('member', $user->getRoles())) {
-          echo ',jsem jen member';
+        if ($user->isLoggedIn() && $user->isInRole('admin')) {
+        //vsechny produkty
+        $productList = $this->database->query('SELECT vm_product.Id, vm_product.Title, vm_product.Description, vm_product.Price 
+        FROM vm_product');
+        $this->template->products = $productList;
         }
-        if (in_array('admin', $user->getRoles())) {
-          echo ',jsem admin';
-        }
-        //vsechny objednavky
-        $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                                            vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
-                                            FROM vm_order 
-                                            LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                                            LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id');
-        $this->template->posts = $orderList;
-      }
 
-      public function renderCustomerOrderList(): void
-      { 
-        // get customer Id from session?
-        $customerId = 2;
-        $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                                            vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
-                                            FROM vm_order 
-                                            LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                                            LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
-                                            WHERE vm_order.customerId = ?', $customerId);
-        $this->template->posts = $orderList;
+        
+
+        else {
+          $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.');
+          //$this->redirect('Sign:in'); 
+        }
       }
 
       public function renderDetail(int $id = 0): void

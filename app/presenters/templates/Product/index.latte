@@ -1,0 +1,28 @@
+{block content}
+
+{if !$user->isInRole('admin')} <p><a class="nav-link" href="{plink Homepage:default}">Návrat na úvodní stránku</a></p> 
+	{else} <h2 class='mt-4'>Správa produktů</h2>
+    
+    
+    {if !empty($products)}
+	<table class='mt-4 table table-bordered'>
+     {foreach $products as $product}
+    <tr class="product">
+        
+
+        <td>{$product->Id}</td>
+
+        <td>{$product->Title}</td>
+		<td class="description">{$product->Description}</td>
+        <td class="price">{$product->Price}</td>
+		<td class="detail"><a href="{link Order:detail $product->Id}">Detail produktu</a></td>
+    </tr>
+    {/foreach}
+	</table>
+	{else}
+	<p class='mt-4'>Nemáte žádné objednávky.</p>
+	{/if}
+    
+    {/if}
+
+{/block}

@@ -40,7 +40,8 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                          LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
                          LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                          WHERE vm_order.CustomerId = ?', $customerId);
-            $this->template->posts = $orderList;
+            $this->template->posts = $orderList->fetchAll();
+            //var_dump($orderList->fetchAll());
             //$customerRoles = implode(',', $user->getRoles());
             //var_dump($customerRoles);
             $this->template->customerId = $customerId;

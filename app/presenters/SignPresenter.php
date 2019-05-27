@@ -25,12 +25,6 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         $this->database = $database;
     }
 
-    public function renderIn(): void 
-    {    
-        $user = $this->getUser();
-        echo $user->isLoggedIn() ? 'ano' : 'ne';
-    }
-
     public function renderUp(): void 
     {    
         echo 'hello';
@@ -79,7 +73,7 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         
                 //login
                 $this->getUser()->login($values->email, $values->password);
-                $this->redirect('Product:index');
+                $this->redirect('Order:index');
     
             } catch (Nette\Application\BadRequestException $e) {
                 $form->addError($e->getMessage());

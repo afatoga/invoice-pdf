@@ -14,7 +14,7 @@ html {
     padding-top: 56px;
     margin-bottom: 80px; /* Margin bottom by footer height */
   }
-  .footer {
+  footer {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -39,4 +39,10 @@ html {
   
   div.mx-auto img { height: auto; max-width: 100%; 
     display:block; margin: 0 auto;}
+
+    @media (max-width: 991px) {
+      div.container {
+          max-width: 100%;
+      }
+    }
   
