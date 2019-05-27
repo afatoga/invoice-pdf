@@ -26,9 +26,6 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
         FROM vm_product');
         $this->template->products = $productList;
         }
-
-        
-
         else {
           $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.');
           //$this->redirect('Sign:in'); 
@@ -40,6 +37,44 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
         echo $id;
         echo 'ahoj';
         //var_dump($_GET['orderId']);
+      }
+
+      public function actionCreate(): void
+      {
+
+      }
+
+      protected function createComponentCreateProductForm(): Form
+      {
+          $form = new Form;
+          $form->addText('title', 'Název:')
+              ->setRequired('Zadejte název.');
+  
+          $form->addText('description', 'Popis:')
+              ->setRequired('Zadejte popis.');
+
+          $form->addText('price', 'Cena:')
+              ->setRequired('Zadejte cenu.')
+              ->setHtmlType('number')
+              ->addRule(Form::INTEGER, 'Cena musí být číslo.')
+              ->addRule(Form::RANGE, 'Cena musí být v rozmezí 0 až 100 000.', [0, 100000]);    
+  
+          $form->addSubmit('send', 'Uložit');
+  
+          $form->onSuccess[] = [$this, 'createProductFormSucceeded'];
+          return $form;
+      }
+  
+      public function createProductFormSucceeded(Form $form, \stdClass $values): void
+      {
+          try {
+              $this->getUser()->login($values->email, $values->password);
+              $this->database->query('INSERT INTO vm_product (Title, `Description`, Price) VALUES (?, ?, ?)', $values->Title, $values->Description, $values->Price);
+              $this->redirect('Product:index');
+  
+          } catch (Nette\Application\BadRequestException $e) {
+            $form->addError($e->getMessage());
+            }
       }
 
 }

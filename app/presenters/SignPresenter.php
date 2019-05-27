@@ -52,8 +52,9 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         $form->addPassword('password', 'Heslo:')
             ->setRequired('Prosím vyplňte své heslo.');
 
-        $form->addPassword('passwordAgain', 'Heslo (vyplňte znovu):')
-            ->setRequired('Prosím vyplňte své heslo znovu.');
+        $form->addPassword('passwordVerify', 'Heslo (vyplňte znovu):')
+            ->setRequired('Prosím vyplňte své heslo znovu.')
+            ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['password']);
 
         $form->addSubmit('send', 'Registrovat');
 
@@ -64,7 +65,7 @@ final class SignPresenter extends Nette\Application\UI\Presenter
     public function signUpFormSucceeded(Form $form, \stdClass $values): void
     {   
         $credentials = [];
-        if ($values->password == $values->passwordAgain) {
+        if ($values->password == $values->passwordVerify) {
 
             try {
                 $registrator = new Registrator ($this->database);
