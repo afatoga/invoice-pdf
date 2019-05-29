@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presenters;
 
 use Nette;
+use App\Model\OrderController;
 
 
 final class OrderPresenter extends Nette\Application\UI\Presenter
@@ -24,23 +25,23 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           if ($user->isInRole('admin')) {
             //vypisuju vsechny objednavky
             $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                          vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
+                          vm_order.StatusId, vm_user.Email, vm_orderStatus.Title AS `Status` 
                           FROM vm_order 
                           LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
                           LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id');
-                          $this->template->posts = $orderList;
+                          $this->template->orderList = $orderList;
           }
           else {
             //vypisuju objednavky konkretniho uzivatele
             $customerId = $user->getId();
             //var_dump($customerId);
             $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                         vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
+                         vm_order.StatusId, vm_user.Email, vm_orderStatus.Title AS `Status`
                          FROM vm_order 
                          LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
                          LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                          WHERE vm_order.CustomerId = ?', $customerId);
-            $this->template->posts = $orderList->fetchAll();
+            $this->template->orderList = $orderList->fetchAll();
             //var_dump($orderList->fetchAll());
             //$customerRoles = implode(',', $user->getRoles());
             //var_dump($customerRoles);
@@ -73,11 +74,28 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         $this->template->posts = $orderList;
       }*/
 
-      public function renderDetail(int $id = 0): void
+      public function renderDetail(int $id): void
       { 
-        echo $id;
-        echo 'ahoj';
-        //var_dump($_GET['orderId']);
+        $user = $this->getUser();
+        $orderController = new OrderController($this->database);
+        
+        if($orderController->isCustomersOrder($user->getId(), $id) || $user->isInRole('admin')) {
+
+        $order = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, 
+                         vm_order.StatusId, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, 
+                         vm_product.Title, vm_product.Description, vm_product.Title AS `ProductTitle`, vm_product.Price
+                         FROM vm_order 
+                         LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
+                         LEFT OUTER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
+                         LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
+                         WHERE vm_order.Id = ?', $id);
+            $this->template->order = $order->fetchAll();
+            $this->template->orderId = $id;
       }
+      else {
+        throw new Nette\Application\BadRequestException('Objednávka není dostupná', 403);
+        //$this->error("Objednávka $id není dostupná.");
+      }
+    }
 
 }

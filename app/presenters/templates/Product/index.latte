@@ -1,7 +1,7 @@
 {block content}
 
 {if !$user->isInRole('admin')} <p><a class="nav-link" href="{plink Homepage:default}">Návrat na úvodní stránku</a></p> 
-	{else} <h2 class='mt-4'>Správa produktů</h2>
+	{else} <h2>Správa produktů</h2>
     
     
     {if !empty($products)}

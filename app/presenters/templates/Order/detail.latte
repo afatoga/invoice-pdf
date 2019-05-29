@@ -1,0 +1,30 @@
+{block content}
+
+	{if $user->isInRole('admin')}ADMIN{/if}
+
+    {if !empty($order)}
+    <h1>Objednávka č. {$orderId}</h1>
+
+	<table class='mt-4 table table-bordered'>
+    <tr>
+    <th>Položka</th>
+    <th>Název</th>
+    <th>Popis</th>
+    <th>Cena</th>
+    </tr>
+     {foreach $order as $orderDetails}
+    <tr class="product">
+        
+		<td>{$iterator->counter}</td>
+		<td>{$orderDetails->ProductTitle}</td>
+        <td>{$orderDetails->Description}</td>
+        <td>{$orderDetails->Price}</td>
+    </tr>
+    {/foreach}
+    </table>
+
+    {else}
+    Objednávka neexistuje.
+    {/if}
+
+{/block}
