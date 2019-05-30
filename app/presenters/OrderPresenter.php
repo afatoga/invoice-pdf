@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Presenters;
 
 use Nette;
+use Nette\Application\UI\Form;
 use App\Model\OrderController;
+use App\Model\ProductController;
 
 
 final class OrderPresenter extends Nette\Application\UI\Presenter
@@ -18,7 +20,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           $this->database = $database;
       }
 
-      public function renderIndex(string $message = ''): void
+      public function renderIndex(): void
       { 
         $user = $this->getUser();
         if ($user->isLoggedIn()) {
@@ -50,47 +52,49 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         
       }
 
-      /*public function renderCustomerOrderList(int $id = 0): void
-      { 
-        $user = $this->getUser();
-        echo $user->isLoggedIn() ? 'ano' : 'ne';
-        echo $user->getId();
-        if (in_array('member', $user->getRoles())) {
-          echo ',jsem member';
-        }
-        //var_dump($user);
-        // get customer Id from session?
-        $customerId = 2;
-        $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                                            vm_order.StatusId, vm_user.Email, vm_orderStatus.Title 
-                                            FROM vm_order 
-                                            LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                                            LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
-                                            WHERE vm_order.customerId = ?', $customerId);
-        $this->template->posts = $orderList;
-      }*/
-
       public function renderDetail(int $id): void
       { 
         $user = $this->getUser();
         $orderController = new OrderController($this->database);
         
-        if($orderController->isCustomersOrder($user->getId(), $id) || $user->isInRole('admin')) {
-
-        $order = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, 
-                         vm_order.StatusId, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, 
-                         vm_product.Title, vm_product.Description, vm_product.Title AS `ProductTitle`, vm_product.Price
-                         FROM vm_order 
-                         LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                         LEFT OUTER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
-                         LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
-                         WHERE vm_order.Id = ?', $id);
-            $this->template->order = $order->fetchAll();
+        if($orderController->isCustomersOrder($user->getId(), $id) || $user->isInRole('admin')) 
+        {
+            //umoznit adminovi pridavat polozky
             $this->template->orderId = $id;
-      }
-      else {
-        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
-      }
+            if ($user->isInRole('admin')) {
+              $this['addProductItemForm']->getComponent('orderId')
+                                        ->setValue($id);
+            } 
+
+            //nacteni polozek
+            $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, 
+                            vm_order.StatusId, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.Id AS `OrderItemId`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
+                            vm_product.Title, vm_product.Description, vm_product.Title AS `ProductTitle` 
+                            FROM vm_order 
+                            LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
+                            INNER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
+                            LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
+                            WHERE vm_order.Id = ?', $id);
+
+              if($sql->getRowCount()>0) {
+                $orderDetails = $sql->fetchAll();
+                //spocitani celkovy ceny objednavky
+                $orderTotalPrice = 0;
+                foreach ($orderDetails as $detail) {
+                  $orderTotalPrice += $detail['Price']*$detail['Quantity'];
+                }
+
+                $this->template->order = $orderDetails;
+                $this->template->orderTotalPrice = $orderTotalPrice;
+
+              
+              } else {
+              $this->flashMessage('Položky objednávky neexistují.', 'alert-warning');
+              }            
+          }
+          else {
+            throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+          }
     }
 
     public function actionCancel(int $id): void
@@ -112,6 +116,86 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
             }
       } else {
         throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
+    }
+
+    public function actionRemoveProductItem(int $orderId, int $itemId): void
+    {
+      $user = $this->getUser();
+        //$orderController = new OrderController($this->database);
+        
+        if($user->isInRole('admin')) {
+
+           $sql = $this->database->query('DELETE 
+                                         FROM vm_orderDetails
+                                         WHERE vm_orderDetails.Id = ?', $itemId);
+                                         
+           $this->redirect('Order:detail', $orderId);
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Úspěšně odstraněno.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze odstranit.', 'alert-danger');
+            }
+      } else {
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
+    }
+
+    protected function createComponentAddProductItemForm(): Form
+    {   
+        $form = new Form;
+
+        $form->addHidden('orderId');
+
+        $productController = new ProductController($this->database);
+        $productList = $productController->getProductList();
+        $products = [];
+        foreach ($productList as $product) {
+          $products[$product['Id']] = $product['Title'];
+        }
+
+        $form->addSelect('productId', 'Produkt', $products)
+              ->setPrompt('Zvolte produkt')
+              ->setRequired('Zvolte produkt.');
+
+        $form->addText('quantity', 'Počet:')
+             ->setRequired('Zadejte počet.')
+             ->setHtmlType('number')
+             ->addRule(Form::INTEGER, 'Počet musí být číslo.')
+             ->addRule(Form::RANGE, 'Cena musí být v rozmezí 1 až 1000.', [1, 1000]);
+             
+        $form->addText('price', 'Cena:')
+             ->setRequired('Zadejte cenu.')
+             ->setHtmlType('number')
+             ->addRule(Form::INTEGER, 'Cena musí být číslo.')
+             ->addRule(Form::RANGE, 'Cena musí být v rozmezí 0 až 1000.', [0, 1000000]);
+
+        $form->addSubmit('send', 'Přidat');
+
+        $form->onSuccess[] = [$this, 'addProductItem'];
+        return $form;
+    }
+
+    public function addProductItem(Form $form, \stdClass $values): void
+    {//int $orderId, $productId, $quantity
+      $user = $this->getUser();
+        
+        if($user->isInRole('admin')) {
+
+           $sql = $this->database->query('INSERT INTO vm_orderDetails (OrderId, ProductId, Quantity, Price) 
+                                          VALUES (?, ?, ?, ?)', $values->orderId, $values->productId, $values->quantity, $values->price);
+           $this->setView('detail');
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Úspěšně vloženo.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze vložit.', 'alert-danger');
+            }
+      } else {
+        throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
       }
 
     }

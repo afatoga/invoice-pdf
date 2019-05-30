@@ -22,7 +22,7 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
         $user = $this->getUser();
         if ($user->isLoggedIn() && $user->isInRole('admin')) {
         //vsechny produkty
-        $productList = $this->database->query('SELECT vm_product.Id, vm_product.Title, vm_product.Description, vm_product.Price 
+        $productList = $this->database->query('SELECT vm_product.Id, vm_product.Title, vm_product.Description
         FROM vm_product');
         $this->template->products = $productList;
         }
