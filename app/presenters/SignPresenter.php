@@ -38,7 +38,7 @@ final class SignPresenter extends Nette\Application\UI\Presenter
             $this->redirect('Homepage:default');
             }
         else {
-            $this->flashMessage('Nejste přihlášen.');
+            $this->flashMessage('Nejste přihlášen.', 'alert-warning');
         }
     }
 

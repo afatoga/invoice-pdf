@@ -27,7 +27,7 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
         $this->template->products = $productList;
         }
         else {
-          $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.');
+          $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.', 'alert-warning');
           //$this->redirect('Sign:in'); 
         }
       }

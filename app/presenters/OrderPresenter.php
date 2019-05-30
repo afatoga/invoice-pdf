@@ -18,7 +18,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           $this->database = $database;
       }
 
-      public function renderIndex(): void
+      public function renderIndex(string $message = ''): void
       { 
         $user = $this->getUser();
         if ($user->isLoggedIn()) {
@@ -29,12 +29,11 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                           FROM vm_order 
                           LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
                           LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id');
-                          $this->template->orderList = $orderList;
+            $this->template->orderList = $orderList;
           }
           else {
             //vypisuju objednavky konkretniho uzivatele
             $customerId = $user->getId();
-            //var_dump($customerId);
             $orderList = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
                          vm_order.StatusId, vm_user.Email, vm_orderStatus.Title AS `Status`
                          FROM vm_order 
@@ -42,9 +41,6 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                          LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                          WHERE vm_order.CustomerId = ?', $customerId);
             $this->template->orderList = $orderList->fetchAll();
-            //var_dump($orderList->fetchAll());
-            //$customerRoles = implode(',', $user->getRoles());
-            //var_dump($customerRoles);
             $this->template->customerId = $customerId;
           }
         }
@@ -93,9 +89,31 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
             $this->template->orderId = $id;
       }
       else {
-        throw new Nette\Application\BadRequestException('Objednávka není dostupná', 403);
-        //$this->error("Objednávka $id není dostupná.");
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
       }
+    }
+
+    public function actionCancel(int $id): void
+    {
+      $user = $this->getUser();
+        $orderController = new OrderController($this->database);
+        
+        if($orderController->isCustomersOrder($user->getId(), $id) || $user->isInRole('admin')) {
+
+           $sql = $this->database->query('UPDATE vm_order 
+                                         SET vm_order.StatusId = 3
+                                         WHERE vm_order.Id = ?', $id);
+           $this->setView('index');
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Úspěšně stornováno.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze stornovat.', 'alert-danger');
+            }
+      } else {
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
     }
 
 }

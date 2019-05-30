@@ -5,6 +5,12 @@
 	
 	{if !empty($orderList)}
 	<table class='mt-4 table table-bordered'>
+	<tr>
+	<th>Číslo obj.</th>
+	<th>Stav</th>
+	<th>Datum vzniku</th>
+	<th></th>
+	</tr>
      {foreach $orderList as $order}
     <tr class="order">
         
@@ -13,6 +19,7 @@
         <td>{$order->Status}</td>
 		<td class="date">{$order->InsertTime|date:'F j, Y'}</td>
 		<td class="detail"><a href="{link Order:detail $order->Id}">Detail objednávky</a></td>
+		 <td class="cancel"><a n:href="Order:Cancel $order->Id">Stornovat</a></td>
     </tr>
     {/foreach}
 	</table>

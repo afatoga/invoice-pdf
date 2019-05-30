@@ -13,12 +13,12 @@ class OrderController
 		$this->database = $database;
     }
 
-    public function isCustomersOrder (int $userId, int $orderId): bool 
+    public function isCustomersOrder (int $customerId, int $orderId): bool 
     {
         $sql = $this->database->query('SELECT vm_order.Id, vm_order.CustomerId 
                           FROM vm_order
                           WHERE vm_order.Id = ?
-                          AND vm_order.CustomerId = ?', $userId, $orderId);
+                          AND vm_order.CustomerId = ?', $orderId, $customerId);
         if (!empty($sql->fetch())) {
             return true;
         }
