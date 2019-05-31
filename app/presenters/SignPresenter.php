@@ -27,7 +27,11 @@ final class SignPresenter extends Nette\Application\UI\Presenter
 
     public function renderUp(): void 
     {    
-        echo 'hello';
+        $user = $this->getUser();
+        if ($user->isLoggedIn()) {
+            $this->flashMessage('Jste již přihlášen.', 'alert-warning');
+            $this->redirect('Homepage:default');
+        }
     }
 
     public function actionOut(): void 
@@ -35,6 +39,7 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         $user = $this->getUser();
         if ($user->isLoggedIn()) {
             $this->getUser()->logout();
+            $this->flashMessage('Byl jste odhlášen.', 'alert-warning');
             $this->redirect('Homepage:default');
             }
         else {
@@ -74,7 +79,8 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         
                 //login
                 $this->getUser()->login($values->email, $values->password);
-                $this->redirect('Order:index');
+                $this->flashMessage('Děkujeme za registraci, nyní jste přihlášen.', 'alert-success');
+                $this->redirect('Homepage:default');
     
             } catch (Nette\Application\BadRequestException $e) {
                 $form->addError($e->getMessage());
@@ -104,7 +110,8 @@ final class SignPresenter extends Nette\Application\UI\Presenter
     {
         try {
             $this->getUser()->login($values->email, $values->password);
-            $this->redirect('Product:index');
+            $this->flashMessage('Jste přihlášen.', 'alert-success');
+            $this->redirect('Homepage:default');
 
         } catch (Nette\Security\AuthenticationException $e) {
             $form->addError('Nesprávné přihlašovací jméno nebo heslo.');

@@ -8,6 +8,8 @@ use Nette;
 use Nette\Application\UI\Form;
 use App\Model\OrderController;
 use App\Model\ProductController;
+use App\Model\UserController;
+use App\Model\Registrator;
 
 
 final class OrderPresenter extends Nette\Application\UI\Presenter
@@ -130,16 +132,60 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
            $sql = $this->database->query('DELETE 
                                          FROM vm_orderDetails
                                          WHERE vm_orderDetails.Id = ?', $itemId);
-                                         
-           $this->redirect('Order:detail', $orderId);
-                              
             if($sql->getRowCount()>0) {
                $this->flashMessage('Úspěšně odstraněno.', 'alert-success');  
             } else {
               $this->flashMessage('Nelze odstranit.', 'alert-danger');
             }
+           $this->redirect('Order:detail', $orderId);
+                              
       } else {
         throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
+    }
+
+    protected function createComponentAddOrderForm(): Form
+    {   
+        $form = new Form;
+
+        $form->addEmail('email', 'E-mail:')
+            ->setRequired('Prosím vyplňte e-mail zákazníka.');
+
+        $form->addSubmit('send', 'Vytvořit');
+
+        $form->onSuccess[] = [$this, 'addOrder'];
+        return $form;
+    }
+
+    public function addOrder(Form $form, \stdClass $values): void
+    {
+      $user = $this->getUser();
+        
+        if($user->isInRole('admin')) {
+
+          $userController = new UserController($this->database);
+          $customerId = $userController->getCustomerIdByEmail($values->email);
+
+          //zakaznik neni registrovan
+          if (is_null($customerId)) {
+            $registrator = new Registrator ($this->database);
+            $registrator->register([$values->email, null]);
+            $customerId = $userController->getCustomerIdByEmail($values->email);
+          }
+
+          $sql = $this->database->query('INSERT INTO vm_order (CustomerId) 
+                                          VALUES (?)', $customerId);
+           $this->setView('index');
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Úspěšně vloženo.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze vložit.', 'alert-danger');
+            }
+           
+      } else {
+        throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
       }
 
     }
@@ -180,7 +226,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
     }
 
     public function addProductItem(Form $form, \stdClass $values): void
-    {//int $orderId, $productId, $quantity
+    {
       $user = $this->getUser();
         
         if($user->isInRole('admin')) {

@@ -22,14 +22,22 @@ class Authenticator implements NS\IAuthenticator
         WHERE Email = ?', $email);
         $row = $row->fetch();
 		if (!$row) {
-			throw new NS\AuthenticationException('User not found.');
+			throw new NS\AuthenticationException('Uživatel nenalezen.');
         }
         
-        $nettePasswords = new NS\Passwords;
-        if (!$nettePasswords->verify($password, $row['HashedPassword'])) 
-        {
-			throw new NS\AuthenticationException('Invalid password.');
+        //uzivatel se nezaregistroval, ucet vytvoren adminem
+        if (!is_null($row['HashedPassword'])) {
+
+            $nettePasswords = new NS\Passwords;
+            if (!$nettePasswords->verify($password, $row['HashedPassword'])) 
+            {
+                throw new NS\AuthenticationException('Invalid password.');
+            }
+
+        } else {
+            throw new NS\AuthenticationException('Nelze se přihlásit, kontaktujte správce.');
         }
+        
         
         $role = '';
         if ($row['RoleId'] == 1) {
