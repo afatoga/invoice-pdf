@@ -122,6 +122,29 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
     }
 
+    public function actionRestore(int $id): void
+    {
+      $user = $this->getUser();
+        $orderController = new OrderController($this->database);
+        
+        if($user->isInRole('admin')) {
+
+           $sql = $this->database->query('UPDATE vm_order 
+                                         SET vm_order.StatusId = 1
+                                         WHERE vm_order.Id = ?', $id);
+           $this->setView('index');
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Úspěšně obnoveno.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze obnovit.', 'alert-danger');
+            }
+      } else {
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
+    }
+
     public function actionRemoveProductItem(int $orderId, int $itemId): void
     {
       $user = $this->getUser();
@@ -231,15 +254,23 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         
         if($user->isInRole('admin')) {
 
-           $sql = $this->database->query('INSERT INTO vm_orderDetails (OrderId, ProductId, Quantity, Price) 
-                                          VALUES (?, ?, ?, ?)', $values->orderId, $values->productId, $values->quantity, $values->price);
-           $this->setView('detail');
-                              
-            if($sql->getRowCount()>0) {
-               $this->flashMessage('Úspěšně vloženo.', 'alert-success');  
-            } else {
-              $this->flashMessage('Nelze vložit.', 'alert-danger');
-            }
+          //nalezeni polozky v objednavce
+          $orderController = new OrderController($this->database);
+          if ($orderController->isProductItemPresentInOrder((int) $values->orderId, $values->productId))
+          {
+              $this->flashMessage('Položka již existuje v objednávce.', 'alert-danger');
+          } else {
+              $sql = $this->database->query('INSERT INTO vm_orderDetails (OrderId, ProductId, Quantity, Price) 
+                                            VALUES (?, ?, ?, ?)', $values->orderId, $values->productId, $values->quantity, $values->price);
+                                            $this->setView('detail');
+
+              if($sql->getRowCount()>0) {
+                $this->flashMessage('Úspěšně vloženo.', 'alert-success');  
+              } else {
+                $this->flashMessage('Nelze vložit.', 'alert-danger');
+              }    
+          }
+
       } else {
         throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
       }

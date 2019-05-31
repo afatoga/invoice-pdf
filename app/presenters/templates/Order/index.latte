@@ -1,27 +1,30 @@
 {block content}
 
-	{if $user->isInRole('member')} <h2>Moje objednávky</h2>
-	{else} <h2>Všechny objednávky</h2>{/if}
+    <h2>Objednávky</h2>
 	
 	{if !empty($orderList)}
 	<table class='mt-4 table table-bordered'>
+	<thead class='thead-dark'>
 	<tr>
 	<th>Číslo obj.</th>
 	{if $user->isInRole('admin')}<th>Zákazník</th>{/if}
-	<th>Stav</th>
 	<th>Datum vzniku</th>
-	<th></th>
-	<th></th>
+	<th>Stav</th>
+	<th>Operace</th>
 	</tr>
+	</thead>
      {foreach $orderList as $order}
-    <tr class="order">
+    <tr class="order" {if $order->StatusId == 3}style="background-color:#e6e6e6"{/if}>
         
 		<td>{$order->Id}</td>
 		{if $user->isInRole('admin')}<td>{$order->Email}</td>{/if}
-        <td>{$order->Status}</td>
 		<td class="date">{$order->InsertTime|date:'j.n.Y'}</td>
-		<td class="detail"><a href="{link Order:detail $order->Id}">Zobrazit</a></td>
-		<td class="cancel"><a n:href="Order:Cancel $order->Id">Stornovat</a></td>
+		<td>{$order->Status}</td>
+		<td><a href="{link Order:detail $order->Id}">Zobrazit</a>
+		{if $order->StatusId != 3}<br /><a class="text-danger" href="{link Order:Cancel $order->Id}" onclick="return confirm('Potvrďte stornování.')">Stornovat</a>
+		{elseif $user->isInRole('admin')}<br /><a class="text-success" href="{link Order:Restore $order->Id}" onclick="return confirm('Potvrďte obnovení.')">Obnovit</a>
+		{/if}</td>
+		
     </tr>
     {/foreach}
 	</table>
