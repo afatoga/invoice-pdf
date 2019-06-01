@@ -1,0 +1,108 @@
+<style>
+        * {
+            box-sizing: border-box;
+        }
+        body{
+                font-family:sans-serif;
+                width:54%;
+                margin:0 auto;
+        }
+        h1{
+                text-align:right;
+                margin:0px;
+        }
+        h2{     
+                font-weight:300;
+                font-size:14pt;
+        }
+        .contact, .client {
+                vertical-align: top;
+        }
+        .clientName {
+                font-size:14pt;
+        }
+        table{
+                width:100%;
+                margin-top:2rem;
+                border-collapse:collapse
+        }
+        td.borderreset {
+                border-width:1px 1px 0 1px;
+        }
+        td {
+           padding:1.4rem 0.8rem 0.8rem;
+           border-width: 0 1px 1px;
+           border-style:solid;     
+        }
+        .alignright {
+                text-align: right;
+        }
+        .p-top2 {
+                padding-top: 2rem;
+        }
+        th{
+                text-align:center;
+                border: 1px solid #000;
+        }
+        #polozky {
+                margin-top: 2rem;
+        }
+</style>
+
+  </head>
+
+  <body>
+    
+    <h1>Faktura číslo: {$orderId}</h1>
+    <table>
+            <tr><td class='borderreset contact'>
+                                        <h2>Dodavatel</h2>
+                                        <br>
+                                        <p>Vitarex s.r.o.
+                                            <br>
+                                        Lipanská 10
+                                        <br>
+                                        130 00 Praha 3
+                                        <br>
+                                        Česká republika
+                                        </p>
+                                        <p>
+                                            IČ: 26177901
+                                            <br>
+                                            DIČ: CZ26177901
+                                            <br>
+                                            e-mail: vitarex@seznam.cz
+                                            <br>
+                                            telefon: +420 608 000 419
+                                            <br><br><br>
+                                            Banka: ČSOB 
+                                            <br>
+                                            Číslo účtu: 166174430 / 0300
+                                    </p>
+                                       
+
+            </td><td class='borderreset client'>
+                                        <h2>Odběratel</h2>
+                                        <br>
+                                        <p class='clientName'>Jméno Příjmení
+                                        <br>
+                                        Ulice 32
+                                        <br>
+                                        130 00 Praha 3
+                                        <br>
+                                        Česká republika</p>  
+            </td></tr>
+            <tr>
+                <td>Datum vystavení: $date</td>
+                <td>Datum splatnosti: $datePlusMonth</td>
+            </tr>
+    </table>        
+
+    <div id='polozky'>
+    <h2>Položky</h2>
+    <table>
+            <tr>
+                    <th>Množství</th>
+                    <th>Název</th>
+                    <th>Cena</th>
+            </tr>

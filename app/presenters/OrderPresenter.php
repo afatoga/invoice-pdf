@@ -10,6 +10,8 @@ use App\Model\OrderController;
 use App\Model\ProductController;
 use App\Model\UserController;
 use App\Model\Registrator;
+use App\Model\PDFOutputController;
+use \Joseki\Application\Responses\PdfResponse;
 
 
 final class OrderPresenter extends Nette\Application\UI\Presenter
@@ -297,6 +299,40 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
       } else {
         throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
       }
+
+    }
+
+    public function actionViewpdf($orderId): void
+    { 
+      $orderController = new OrderController($this->database);
+      $order = $orderController->getOrder($orderId);
+      $orderDetails = $orderController->getOrderDetails($orderId);
+      //$pdfOutputController = new PDFOutputController();
+      //$pdfOutputController->viewPDF($order, $orderDetails);
+      //var_dump($order);
+      //var_dump($orderDetails);
+      //$PDFOutputController = new PDFOutputController ($this->database);
+
+      date_default_timezone_set('Europe/Prague');
+      $date = date("d. m. Y");
+      $datePlusMonth = date("d. m. Y", strtotime("+30 days"));
+
+      $template = $this->createTemplate();
+      $template->setFile(__DIR__ . "/templates/Pdf/pdf.latte");
+      $template->orderId = $orderId;
+      // Tip: In template to make a new page use <pagebreak>
+
+      $pdf = new \Joseki\Application\Responses\PdfResponse($template);
+
+      // optional
+      $pdf->setSaveMode(PdfResponse::INLINE);
+      $pdf->documentTitle = date("Y-m-d") . " faktura".$orderId; // creates filename 2012-06-30-my-super-title.pdf
+      $pdf->pageFormat = "A4"; // wide format
+      $pdf->getMPDF()->setFooter("|© www.mysite.com|"); // footer
+      
+      // do something with $pdf
+      $this->sendResponse($pdf);
+
 
     }
 
