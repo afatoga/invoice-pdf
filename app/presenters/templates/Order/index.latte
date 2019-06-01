@@ -21,6 +21,7 @@
 		<td class="date">{$order->InsertTime|date:'j.n.Y'}</td>
 		<td>{$order->Status}</td>
 		<td><a href="{link Order:detail $order->Id}">Zobrazit</a>
+		{if $order->StatusId == 1}<br /><a class="text-info" href="{link Order:SetPaid $order->Id}" onclick="return confirm('Je objednávka zaplacená.')">Zaplaceno</a>{/if}
 		{if $order->StatusId != 3}<br /><a class="text-danger" href="{link Order:Cancel $order->Id}" onclick="return confirm('Potvrďte stornování.')">Stornovat</a>
 		{elseif $user->isInRole('admin')}<br /><a class="text-success" href="{link Order:Restore $order->Id}" onclick="return confirm('Potvrďte obnovení.')">Obnovit</a>
 		{/if}</td>

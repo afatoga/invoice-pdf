@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presenters;
 
 use Nette;
+use Nette\Application\UI\Form;
 
 
 final class ProductPresenter extends Nette\Application\UI\Presenter
@@ -20,7 +21,7 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
       public function renderIndex(): void
       { 
         $user = $this->getUser();
-        if ($user->isLoggedIn() && $user->isInRole('admin')) {
+        if ($user->isInRole('admin')) {
         //vsechny produkty
         $productList = $this->database->query('SELECT vm_product.Id, vm_product.Title, vm_product.Description
         FROM vm_product');
@@ -28,53 +29,75 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
         }
         else {
           $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.', 'alert-warning');
-          //$this->redirect('Sign:in'); 
+          $this->redirect('Homepage:default'); 
         }
       }
 
-      public function renderDetail(int $id = 0): void
+      public function actionEdit(?int $id): void
       { 
-        echo $id;
-        echo 'ahoj';
-        //var_dump($_GET['orderId']);
+        $user = $this->getUser();
+        if ($user->isInRole('admin')) {
+        //nacteni produktu, pokud existuje id
+              if(isset($id)) {
+
+              $sql = $this->database->query('SELECT vm_product.Id, vm_product.Title, vm_product.Description
+              FROM vm_product
+              WHERE Id = ?', $id);
+              $product = $sql->fetch();
+                  //nastavim id, ktere nelze zmenit
+                  $this['editProductForm']->getComponent('productId')
+                                          ->setValue($id);
+                  //prirazeni hodnot existujiciho produktu
+                  $this['editProductForm']->setDefaults([
+                                      'title' => $product->Title,
+                                      'description' => $product->Description
+                  ]);
+              }
+              
+        }
+        else {
+          $this->flashMessage('Tato stránka je dostupná pouze pro správce aplikace.', 'alert-warning');
+          $this->redirect('Homepage:default'); 
+        }
+
       }
 
-      public function actionCreate(): void
-      {
-
-      }
-
-      protected function createComponentCreateProductForm(): Form
+      protected function createComponentEditProductForm(): Form
       {
           $form = new Form;
           $form->addText('title', 'Název:')
-              ->setRequired('Zadejte název.');
+               ->setRequired('Zadejte název.');
   
-          $form->addText('description', 'Popis:')
-              ->setRequired('Zadejte popis.');
+          $form->addTextArea('description', 'Popis:')
+                ->setRequired('Zadejte popis.')
+                ->setHtmlAttribute('autocomplete', 'off');
+  
+          $form->addHidden('productId');
 
-          $form->addText('price', 'Cena:')
-              ->setRequired('Zadejte cenu.')
-              ->setHtmlType('number')
-              ->addRule(Form::INTEGER, 'Cena musí být číslo.')
-              ->addRule(Form::RANGE, 'Cena musí být v rozmezí 0 až 100 000.', [0, 100000]);    
-  
           $form->addSubmit('send', 'Uložit');
   
-          $form->onSuccess[] = [$this, 'createProductFormSucceeded'];
+          $form->onSuccess[] = [$this, 'editProductFormSucceeded'];
           return $form;
       }
   
-      public function createProductFormSucceeded(Form $form, \stdClass $values): void
-      {
-          try {
-              $this->getUser()->login($values->email, $values->password);
-              $this->database->query('INSERT INTO vm_product (Title, `Description`, Price) VALUES (?, ?, ?)', $values->Title, $values->Description, $values->Price);
-              $this->redirect('Product:index');
-  
-          } catch (Nette\Application\BadRequestException $e) {
-            $form->addError($e->getMessage());
-            }
+      public function editProductFormSucceeded(Form $form, \stdClass $values): void
+      {   
+          if (!empty($values->productId)) {
+            $sql = $this->database->query('UPDATE vm_product 
+                                           SET `Title` = ?, `Description` = ? 
+                                           WHERE `Id` = ?', 
+                                           $values->title, $values->description, $values->productId);
+          } else {
+            $sql = $this->database->query('INSERT INTO vm_product (Title, `Description`) VALUES (?, ?)', $values->title, $values->description);
+          }
+
+          if ($sql->getRowCount()>0) {
+            $this->flashMessage('Produkt se uložil', 'alert-success');
+            
+          } else {
+            $this->flashMessage('Produkt se neuložil', 'alert-danger');
+          }
+          $this->redirect('Product:index');
       }
 
 }

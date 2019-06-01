@@ -145,6 +145,29 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
     }
 
+    public function actionSetPaid(int $id): void
+    {
+      $user = $this->getUser();
+        $orderController = new OrderController($this->database);
+        
+        if($user->isInRole('admin')) {
+
+           $sql = $this->database->query('UPDATE vm_order 
+                                         SET vm_order.StatusId = 2
+                                         WHERE vm_order.Id = ?', $id);
+           $this->setView('index');
+                              
+            if($sql->getRowCount()>0) {
+               $this->flashMessage('Označeno jako zaplacené.', 'alert-success');  
+            } else {
+              $this->flashMessage('Nelze označit.', 'alert-danger');
+            }
+      } else {
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
+
+    }
+
     public function actionRemoveProductItem(int $orderId, int $itemId): void
     {
       $user = $this->getUser();

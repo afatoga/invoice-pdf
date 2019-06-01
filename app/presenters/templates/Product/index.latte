@@ -1,27 +1,26 @@
 {block content}
 
-{if !$user->isInRole('admin')} <p><a class="nav-link" href="{plink Homepage:default}">Návrat na úvodní stránku</a></p> 
-	{else} <h2>Správa produktů</h2>
+<h2>Správa produktů</h2>
     
     
     {if !empty($products)}
 	<table class='mt-4 table table-bordered'>
      {foreach $products as $product}
     <tr class="product">
-        
-
         <td>{$product->Id}</td>
-
         <td>{$product->Title}</td>
 		<td class="description">{$product->Description}</td>
-		<td class="detail"><a href="{link Order:detail $product->Id}">Detail produktu</a></td>
+		<td><a href="{link Product:edit $product->Id}">Editace</a></td>
     </tr>
     {/foreach}
 	</table>
-	{else}
-	<p>Přidat produkt</p>
-	{/if}
-    
-    {/if}
+    {else}Produkty neexistují, vytvořte je.{/if}
 
 {/block}
+{block rightSidebar}
+<h2>Nový produkt</h2>
+<form n:name=editProductForm class=form>
+    <p><label n:name=title>Název:</label> <br /> <input n:name=title size=30>
+    <p><label n:name=description>Popis:</label> <br /><textarea n:name=description rows="4" cols="50"> </textarea>
+    <p><input n:name=send value='Vložit' class="btn btn-secondary btn-lg">
+</form>
