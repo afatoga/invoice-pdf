@@ -3,6 +3,8 @@
     {if !empty($order)}
     <h1>Objednávka č. {$orderId}</h1>
 
+    {if $orderStatusId == 3}<p class="text-danger">Objednávka je stornovaná.</p>{/if}
+
 	<table class='mt-4 table table-bordered'>
     <thead class="thead-dark">
     <tr>
@@ -49,10 +51,11 @@
     {if $user->isInRole('admin')}<h2 class='pb-4'>Přidat položku</h2>
     
         {control addProductItemForm}
-    
+    <br />
     {/if}
-    {if !empty($order)}
-    <a href="{link Order:getpdf $orderId}" >Zobrazit pdf</a>
-    <a href="{link Order:getpdf $orderId, 'send'}" >Odeslat pdf na email</a>
+    {if !empty($order) && $orderStatusId != 3}
+    <h2>Operace s fakturami</h2>
+    <a class="btn btn-secondary btn-md" href="{link Order:getpdf $orderId}" >Zobrazit pdf</a>
+    <a class="btn btn-primary btn-md" href="{link Order:getpdf $orderId, 'send'}" >Odeslat pdf na email</a>
     {/if}
 {/block}

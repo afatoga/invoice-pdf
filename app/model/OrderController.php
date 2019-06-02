@@ -37,15 +37,14 @@ class OrderController
         return false;
     }
 
-    public function getOrder(int $orderId): ?array
+    public function getOrder(int $orderId): ?object
     {
-        $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
-                                vm_user.Email
+        $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, vm_order.StatusId, vm_user.Email
                                 FROM vm_order
                                 LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                                 WHERE vm_order.Id = ?', $orderId);
         if ($sql->getRowCount()>0) {
-            $order = $sql->fetchAll();
+            $order = $sql->fetch();
             return $order;
         }
         return null;

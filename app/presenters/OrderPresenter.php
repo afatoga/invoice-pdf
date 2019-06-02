@@ -67,7 +67,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
             $this->template->orderId = $id;
             if ($user->isInRole('admin')) {
               $this['addProductItemForm']->getComponent('orderId')
-                                        ->setValue($id);
+                                         ->setValue($id);
             } 
 
             //nacteni polozek
@@ -87,6 +87,9 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                 foreach ($orderDetails as $detail) {
                   $orderTotalPrice += $detail['Price']*$detail['Quantity'];
                 }
+
+                $order = $orderController->getOrder($id);
+                $this->template->orderStatusId = $order->StatusId;
 
                 $this->template->order = $orderDetails;
                 $this->template->orderTotalPrice = $orderTotalPrice;
@@ -269,7 +272,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           $products[$product['Id']] = $product['Title'];
         }
 
-        $form->addSelect('productId', 'Produkt', $products)
+        $form->addSelect('productId', 'Produkt:', $products)
               ->setPrompt('Zvolte produkt')
               ->setRequired('Zvolte produkt.');
 
@@ -329,7 +332,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         $order = $orderController->getOrder((int) $orderId);
         $orderDetails = $orderController->getOrderDetails((int) $orderId);
         $userController = new UserController($this->database);
-        $userDetails = $userController->getUserDetails($user->getId());
+        $userDetails = $userController->getUserDetails($order->CustomerId);
 
         if ($order !== null && $orderDetails !== null) {
 
@@ -369,9 +372,11 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
               elseif ($method == 'send') {
                 $savedFile = $pdf->save(__DIR__ . "/../sentPdf");
                 $mail = new Nette\Mail\Message;
-                $mail->addTo($userDetails->Email);
-                $mail->setFrom('invoicepdf@vse.cz');
-                $mail->addAttachment($savedFile);
+                $mail->setFrom('Invoice-PDF <invoicepdf@vse.cz>')
+                     ->addTo($userDetails->Email)
+                     ->setSubject('Faktura za služby')
+                     ->setBody("V příloze je faktura od společnosti Invoice-PDF s.r.o.")
+                     ->addAttachment($savedFile);
                 $mailer = new Nette\Mail\SendmailMailer();
                 $mailer->send($mail);
 
@@ -384,13 +389,5 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
       }else{
         throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
       }
-
-
     }
-
-    public function actionSendpdf(string $orderId): void
-    { 
-
-    }
-
 }

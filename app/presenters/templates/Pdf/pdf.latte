@@ -94,13 +94,13 @@
             </td><td class='borderreset client'>
                                         <h2>Odběratel</h2>
                                         <br>
-                                        <p class='clientName'>Jméno Příjmení
+                                        <p class='clientName'>{$userDetails->Name} {$userDetails->Surname}
                                         <br>
-                                        Ulice 32
+                                        {$userDetails->Address}
                                         <br>
-                                        130 00 Praha 3
+                                        {$userDetails->Zip} {$userDetails->City}
                                         <br>
-                                        Česká republika</p>  
+                                        {$userDetails->Country}</p>  
             </td></tr>
             <tr>
                 <td>Datum vystavení: {$date}</td>
