@@ -74,9 +74,9 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
             $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, 
                             vm_order.StatusId, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.Id AS `OrderItemId`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
                             vm_product.Title, vm_product.Description, vm_product.Title AS `ProductTitle` 
-                            FROM vm_order 
+                            FROM vm_order
+                            INNER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId 
                             LEFT OUTER JOIN vm_orderStatus ON vm_order.StatusId = vm_orderStatus.Id 
-                            INNER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
                             LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
                             WHERE vm_order.Id = ?', $id);
 
@@ -232,7 +232,6 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           }
 
           $userDetails = $userController->getUserDetails($customerId);
-          var_dump($userDetails->Name);
           if (empty($userDetails->Name) && empty($userDetails->Surname)) {
             //doplneni jmena, prijmeni k uzivatelskemu uctu
             $sql = $this->database->query('UPDATE vm_user 
@@ -321,7 +320,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
     }
 
-    public function actionViewpdf(string $orderId): void
+    public function actionGetpdf(string $orderId, ?string $method): void
     { 
       $user = $this->getUser();
       $orderController = new OrderController($this->database);
@@ -329,13 +328,18 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
       { 
         $order = $orderController->getOrder((int) $orderId);
         $orderDetails = $orderController->getOrderDetails((int) $orderId);
-        
+        $userController = new UserController($this->database);
+        $userDetails = $userController->getUserDetails($user->getId());
+
         if ($order !== null && $orderDetails !== null) {
 
             $template = $this->createTemplate();
             $template->setFile(__DIR__ . "/templates/Pdf/pdf.latte");
-            $template->orderId = $orderId;
             
+            //definice promennych
+            $template->orderId = $orderId;
+            $template->userDetails = $userDetails;
+
             $orderTotalPrice = 0;
             foreach ($orderDetails as $detail) {
               $orderTotalPrice += $detail['Price']*$detail['Quantity'];
@@ -352,14 +356,27 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
             $pdf = new \Joseki\Application\Responses\PdfResponse($template);
 
-            // optional
+            // parametry mpdf
             $pdf->setSaveMode(PdfResponse::INLINE);
             $pdf->documentTitle = date("Y-m-d") . " faktura".$orderId; // creates filename 2012-06-30-my-super-title.pdf
             $pdf->pageFormat = "A4"; // wide format
             $pdf->getMPDF()->setFooter("© www.invoice-pdf.com"); // footer
             
-            // do something with $pdf
-            $this->sendResponse($pdf);
+              if (is_null($method)) {
+              //zobrazeni pdf v prohlizeci
+              $this->sendResponse($pdf);
+              }
+              elseif ($method == 'send') {
+                $savedFile = $pdf->save(__DIR__ . "/../sentPdf");
+                $mail = new Nette\Mail\Message;
+                $mail->addTo($userDetails->Email);
+                $mail->setFrom('invoicepdf@vse.cz');
+                $mail->addAttachment($savedFile);
+                $mailer = new Nette\Mail\SendmailMailer();
+                $mailer->send($mail);
+
+                $this->flashMessage('Email s fakturou v pdf úspěšně odeslán', 'alert-success');
+              }
         } else {
           throw new Nette\Application\BadRequestException('Objednávka nenalezena', 404);
         }
@@ -368,6 +385,11 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
       }
 
+
+    }
+
+    public function actionSendpdf(string $orderId): void
+    { 
 
     }
 

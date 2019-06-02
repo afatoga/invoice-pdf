@@ -53,10 +53,9 @@ class OrderController
 
     public function getOrderDetails(int $orderId): ?array
     {
-        $sql = $this->database->query('SELECT vm_order.Id, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
-                                vm_product.Title, vm_product.Description
+        $sql = $this->database->query('SELECT vm_order.Id, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price, vm_product.Title, vm_product.Description
                                 FROM vm_order
-                                LEFT OUTER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
+                                INNER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
                                 LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
                                 WHERE vm_order.Id = ?', $orderId);
         if ($sql->getRowCount()>0) {

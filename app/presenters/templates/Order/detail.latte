@@ -52,6 +52,7 @@
     
     {/if}
     {if !empty($order)}
-    <a href="{link Order:viewpdf $orderId}" >Zobrazit pdf</a>
+    <a href="{link Order:getpdf $orderId}" >Zobrazit pdf</a>
+    <a href="{link Order:getpdf $orderId, 'send'}" >Odeslat pdf na email</a>
     {/if}
 {/block}
