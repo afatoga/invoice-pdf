@@ -18,38 +18,36 @@ class Registrator
 	{
         list($username, $password) = $credentials;
         //check if not registered
-        $row = $this->database->query('SELECT Email, HashedPassword
-        FROM vm_user
-        WHERE Email = ?', $username);
+        $row = $this->database->query('SELECT vm_user.Email, vm_user.HashedPassword FROM vm_user WHERE Email = ?', $username);
         $row = $row->fetch();
-		if ($row && $row['HashedPassword']!==null) {
+        //existuje zaznam od uzivatele, ktery se sam registroval
+		if ($row && $row['HashedPassword'] !== null) {
             throw new Nette\Application\BadRequestException('Uživatel s tímto emailem je již registrován.');
         }
-
-        else {
-            if (isset($password)) {
-
-                $nettePasswords = new NS\Passwords;
-                $hashedPassword = $nettePasswords->hash($password);
-
-                
-                if(is_null($row['HashedPassword'])) {
-                    //registruji uzivatele, ktery ma objednavku, ale nebyl predtim registrovan
-                    $row = $this->database->query('UPDATE vm_user
-                                                   SET HashedPassword = ? 
-                                                   WHERE Email = ?', 
-                                                   $hashedPassword, $username);
-                } else {
-                    $row = $this->database->query('INSERT INTO vm_user (Email, HashedPassword) VALUES (?, ?)', 
-                    $username, $hashedPassword);
-                }
-           
+        //existuje zaznam ale uzivatele pridal admin
+        else if ($row && $row['HashedPassword'] == null && isset($password)) {
+            $nettePasswords = new NS\Passwords;
+            $hashedPassword = $nettePasswords->hash($password);
             
-            } else {
+            $row = $this->database->query('UPDATE vm_user
+                                           SET HashedPassword = ? 
+                                           WHERE Email = ?', 
+                                           $hashedPassword, $username);
+        }
+        //neexistuje zaznam, klasicka registrace
+        else if (!$row && isset($password)) {
+
+            $nettePasswords = new NS\Passwords;
+            $hashedPassword = $nettePasswords->hash($password);    
+            $row = $this->database->query('INSERT INTO vm_user (Email, HashedPassword) VALUES (?, ?)', 
+                    $username, $hashedPassword);
+                
+        } 
+        //neexistuje zaznam, uzivatel vlozen adminem bez hesla
+        else if (!$row) {
                 //admin registruje uzivatele bez hesla
                 $row = $this->database->query('INSERT INTO vm_user (Email) VALUES (?)', 
                 $username);
-            }
         }
 	}
 }

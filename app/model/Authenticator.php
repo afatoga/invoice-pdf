@@ -22,11 +22,11 @@ class Authenticator implements NS\IAuthenticator
         WHERE Email = ?', $email);
         $row = $row->fetch();
 		if (!$row) {
-			throw new NS\AuthenticationException('Uživatel nenalezen.');
+            throw new NS\AuthenticationException('Uživatel nenalezen.');
         }
         
         //uzivatel se nezaregistroval, ucet vytvoren adminem
-        if (!is_null($row['HashedPassword'])) {
+        if ($row['HashedPassword']!= null) {
 
             $nettePasswords = new NS\Passwords;
             if (!$nettePasswords->verify($password, $row['HashedPassword'])) 

@@ -13,3 +13,9 @@ session:
 
 services:
 	router: App\Router\RouterFactory::createRouter
+	authenticator: App\Model\Authenticator
+
+database:
+	dsn: 'mysql:host=localhost;dbname=mryv00'
+	user: 'mryv00'
+	password: 'R_*W|`-mJTunLYe)9"'  
