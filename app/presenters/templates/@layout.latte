@@ -30,6 +30,9 @@
       <li class="nav-item">
             <a class="nav-link" n:href="Order:index">Objednávky</a>
           </li>
+      <li class="nav-item">
+            <a class="nav-link" n:href="User:detail">Můj profil</a>
+          </li>
 			<li class="nav-item">
             <a class="nav-link" n:href="Sign:Out">Odhlásit se</a>
           </li>
@@ -37,11 +40,9 @@
      		<li class="nav-item">
             <a class="nav-link" href="{plink Sign:in}">Přihlásit se</a>
           </li>
-           {if $user->isInRole('guest')}
         <li class="nav-item">
             <a class="nav-link" href="{plink Sign:up}">Registrace</a>
           </li>
-          {/if}
 		  {/if}
         </ul>
       </div>

@@ -37,7 +37,7 @@ class OrderController
         return false;
     }
 
-    public function getOrder($orderId): ?array
+    public function getOrder(int $orderId): ?array
     {
         $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, 
                                 vm_user.Email
@@ -51,11 +51,13 @@ class OrderController
         return null;
     }
 
-    public function getOrderDetails($orderId): ?array
+    public function getOrderDetails(int $orderId): ?array
     {
-        $sql = $this->database->query('SELECT vm_order.Id, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price
+        $sql = $this->database->query('SELECT vm_order.Id, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
+                                vm_product.Title, vm_product.Description
                                 FROM vm_order
                                 LEFT OUTER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId
+                                LEFT OUTER JOIN vm_product ON vm_orderDetails.ProductId = vm_product.Id
                                 WHERE vm_order.Id = ?', $orderId);
         if ($sql->getRowCount()>0) {
             $orderDetails = $sql->fetchAll();

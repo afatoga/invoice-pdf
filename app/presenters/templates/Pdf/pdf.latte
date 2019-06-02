@@ -30,7 +30,7 @@
                 border-width:1px 1px 0 1px;
         }
         td {
-           padding:1.4rem 0.8rem 0.8rem;
+           padding:6pt;
            border-width: 0 1px 1px;
            border-style:solid;     
         }
@@ -47,6 +47,16 @@
         #polozky {
                 margin-top: 2rem;
         }
+        #polozky td {
+                text-align: right;
+        }
+        .summary-text {
+                padding-top:20px;
+                font-size:20px;
+        }
+        .summary {
+                text-align:right;
+        }
 </style>
 
   </head>
@@ -58,26 +68,26 @@
             <tr><td class='borderreset contact'>
                                         <h2>Dodavatel</h2>
                                         <br>
-                                        <p>Vitarex s.r.o.
+                                        <p>Invoice-pdf s.r.o.
                                             <br>
-                                        Lipanská 10
+                                        Nová 33
                                         <br>
-                                        130 00 Praha 3
+                                        120 00 Praha 2
                                         <br>
                                         Česká republika
                                         </p>
                                         <p>
-                                            IČ: 26177901
+                                            IČ: 28877901
                                             <br>
-                                            DIČ: CZ26177901
+                                            DIČ: CZ28877901
                                             <br>
-                                            e-mail: vitarex@seznam.cz
+                                            e-mail: info@invoice-pdf.com
                                             <br>
-                                            telefon: +420 608 000 419
+                                            telefon: +420 608 343 420
                                             <br><br><br>
                                             Banka: ČSOB 
                                             <br>
-                                            Číslo účtu: 166174430 / 0300
+                                            Číslo účtu: 19384750 / 0300
                                     </p>
                                        
 
@@ -93,8 +103,8 @@
                                         Česká republika</p>  
             </td></tr>
             <tr>
-                <td>Datum vystavení: $date</td>
-                <td>Datum splatnosti: $datePlusMonth</td>
+                <td>Datum vystavení: {$date}</td>
+                <td><strong>Datum splatnosti: {$datePlusMonth}</strong></td>
             </tr>
     </table>        
 
@@ -106,3 +116,21 @@
                     <th>Název</th>
                     <th>Cena</th>
             </tr>
+            {foreach $orderItems as $item}
+            <tr>
+            <td>{$item->Quantity}</td>
+            <td>{$item->Title}</td>
+            <td>{$item->Price}&nbsp;Kč</td>
+            </tr>
+            {/foreach}
+            <tr class='summary-row'>
+            <td colspan='2' class='summary summary-text'><strong>Celkem:</strong></td>
+            <td class='summary-text'><strong>{$orderTotalPrice}&nbsp;Kč</strong></td>
+            </tr>
+            </table>
+
+            <div id='summary'>
+            <p>Uhraďte, prosím, výše uvedenou cekovou sumu na účet do doby splatnosti.</p>
+            </div>
+
+            </div>

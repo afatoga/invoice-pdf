@@ -26,4 +26,18 @@ class UserController
             return null;
         }
     }
+
+    public function getUserDetails(int $id): ?object
+    {
+        $sql = $this->database->query('SELECT vm_user.* 
+                          FROM vm_user
+                          WHERE Id = ?', $id);
+
+        if ($sql->getRowCount()>0) {
+            $userDetails = $sql->fetch();
+            return $userDetails;
+        } else {
+            return null;
+        }
+    }
 }

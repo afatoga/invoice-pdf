@@ -199,6 +199,15 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
         $form->addEmail('email', 'E-mail:')
             ->setRequired('Prosím vyplňte e-mail zákazníka.');
+        
+        $form->addText('name', 'Jméno:')
+            ->setRequired('Prosím vyplňte křestní jméno zákazníka.')
+            ->addRule(Form::MAX_LENGTH, 'Jmeno nesmí být delší než %d znaků', 60);
+            
+
+       $form->addText('surname', 'Příjmení:')
+            ->setRequired('Prosím vyplňte příjmení zákazníka.')
+            ->addRule(Form::MAX_LENGTH, 'Příjmení nesmí být delší než %d znaků', 60);
 
         $form->addSubmit('send', 'Vytvořit');
 
@@ -215,13 +224,23 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
           $userController = new UserController($this->database);
           $customerId = $userController->getCustomerIdByEmail($values->email);
 
-          //zakaznik neni registrovan
+          //registrace zakaznika bez
           if (is_null($customerId)) {
             $registrator = new Registrator ($this->database);
             $registrator->register([$values->email, null]);
             $customerId = $userController->getCustomerIdByEmail($values->email);
           }
 
+          $userDetails = $userController->getUserDetails($customerId);
+          var_dump($userDetails->Name);
+          if (empty($userDetails->Name) && empty($userDetails->Surname)) {
+            //doplneni jmena, prijmeni k uzivatelskemu uctu
+            $sql = $this->database->query('UPDATE vm_user 
+                                           SET `Name` = ?, Surname = ? 
+                                           WHERE Id = ?', $values->name, $values->surname, $customerId);
+          }
+          
+          //vytvoreni objednavky                              
           $sql = $this->database->query('INSERT INTO vm_order (CustomerId) 
                                           VALUES (?)', $customerId);
            $this->setView('index');
@@ -232,9 +251,9 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
               $this->flashMessage('Nelze vložit.', 'alert-danger');
             }
            
-      } else {
-        throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
-      }
+        } else {
+          throw new Nette\Application\BadRequestException('Nemáte práva administrátora.', 403);
+        }
 
     }
 
@@ -302,36 +321,52 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
     }
 
-    public function actionViewpdf($orderId): void
+    public function actionViewpdf(string $orderId): void
     { 
+      $user = $this->getUser();
       $orderController = new OrderController($this->database);
-      $order = $orderController->getOrder($orderId);
-      $orderDetails = $orderController->getOrderDetails($orderId);
-      //$pdfOutputController = new PDFOutputController();
-      //$pdfOutputController->viewPDF($order, $orderDetails);
-      //var_dump($order);
-      //var_dump($orderDetails);
-      //$PDFOutputController = new PDFOutputController ($this->database);
+      if($orderController->isCustomersOrder($user->getId(), (int)$orderId) || $user->isInRole('admin')) 
+      { 
+        $order = $orderController->getOrder((int) $orderId);
+        $orderDetails = $orderController->getOrderDetails((int) $orderId);
+        
+        if ($order !== null && $orderDetails !== null) {
 
-      date_default_timezone_set('Europe/Prague');
-      $date = date("d. m. Y");
-      $datePlusMonth = date("d. m. Y", strtotime("+30 days"));
+            $template = $this->createTemplate();
+            $template->setFile(__DIR__ . "/templates/Pdf/pdf.latte");
+            $template->orderId = $orderId;
+            
+            $orderTotalPrice = 0;
+            foreach ($orderDetails as $detail) {
+              $orderTotalPrice += $detail['Price']*$detail['Quantity'];
+            }
 
-      $template = $this->createTemplate();
-      $template->setFile(__DIR__ . "/templates/Pdf/pdf.latte");
-      $template->orderId = $orderId;
-      // Tip: In template to make a new page use <pagebreak>
+            $template->orderItems = $orderDetails;
+            $template->orderTotalPrice = $orderTotalPrice;
 
-      $pdf = new \Joseki\Application\Responses\PdfResponse($template);
+            date_default_timezone_set('Europe/Prague');
+            $date = date("j. n. Y");
+            $datePlusMonth = date("j. n. Y", strtotime("+30 days"));
+            $template->date = $date;
+            $template->datePlusMonth = $datePlusMonth;
 
-      // optional
-      $pdf->setSaveMode(PdfResponse::INLINE);
-      $pdf->documentTitle = date("Y-m-d") . " faktura".$orderId; // creates filename 2012-06-30-my-super-title.pdf
-      $pdf->pageFormat = "A4"; // wide format
-      $pdf->getMPDF()->setFooter("|© www.mysite.com|"); // footer
+            $pdf = new \Joseki\Application\Responses\PdfResponse($template);
+
+            // optional
+            $pdf->setSaveMode(PdfResponse::INLINE);
+            $pdf->documentTitle = date("Y-m-d") . " faktura".$orderId; // creates filename 2012-06-30-my-super-title.pdf
+            $pdf->pageFormat = "A4"; // wide format
+            $pdf->getMPDF()->setFooter("© www.invoice-pdf.com"); // footer
+            
+            // do something with $pdf
+            $this->sendResponse($pdf);
+        } else {
+          throw new Nette\Application\BadRequestException('Objednávka nenalezena', 404);
+        }
       
-      // do something with $pdf
-      $this->sendResponse($pdf);
+      }else{
+        throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+      }
 
 
     }
