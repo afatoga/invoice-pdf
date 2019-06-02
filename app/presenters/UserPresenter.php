@@ -62,11 +62,13 @@ final class UserPresenter extends Nette\Application\UI\Presenter
 
         $form->addText('name', 'Jméno:')
              ->setRequired('Prosím vyplňte křestní jméno.')
+             ->addRule(Form::MIN_LENGTH, 'Jméno nesmí být kratší než %d znaky', 3)
              ->addRule(Form::MAX_LENGTH, 'Jmeno nesmí být delší než %d znaků', 60);
              
 
         $form->addText('surname', 'Příjmení:')
              ->setRequired('Prosím vyplňte příjmení.')
+             ->addRule(Form::MIN_LENGTH, 'Příjmení nesmí být kratší než %d znaky', 3)
              ->addRule(Form::MAX_LENGTH, 'Příjmení nesmí být delší než %d znaků', 60);
 
         $form->addText('address', 'Ulice a č. p.:')
@@ -75,6 +77,7 @@ final class UserPresenter extends Nette\Application\UI\Presenter
 
         $form->addText('city', 'Město:')
              ->setRequired('Prosím vyplňte město.')
+             ->addRule(Form::MIN_LENGTH, 'Název města nesmí být kratší než %d znaky', 3)
              ->addRule(Form::MAX_LENGTH, 'Název města nesmí být delší než %d znaků', 60);
 
         $form->addText('zip', 'PSČ:')
