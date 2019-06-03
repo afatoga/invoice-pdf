@@ -332,13 +332,14 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         $order = $orderController->getOrder((int) $orderId);
         $orderDetails = $orderController->getOrderDetails((int) $orderId);
         $userController = new UserController($this->database);
-        $userDetails = $userController->getUserDetails($order->CustomerId);
+        
 
-        if ($order !== null && $orderDetails !== null) {
-
+        if ($order !== null && $orderDetails !== null && $order->StatusId != 3) {
+          
             $template = $this->createTemplate();
             $template->setFile(__DIR__ . "/templates/Pdf/pdf.latte");
             
+            $userDetails = $userController->getUserDetails($order->CustomerId);
             //definice promennych
             $template->orderId = $orderId;
             $template->userDetails = $userDetails;

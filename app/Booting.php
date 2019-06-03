@@ -14,7 +14,7 @@ class Booting
 		$configurator = new Configurator;
 
 		//$configurator->setDebugMode(false);
-		$configurator->setDebugMode('146.102.93.75'); // enable for your remote IP
+		//$configurator->setDebugMode('146.102.93.75'); // enable for your remote IP
 		$configurator->enableTracy(__DIR__ . '/../log');
 
 		$configurator->setTimeZone('Europe/Prague');
