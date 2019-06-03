@@ -1,0 +1,28 @@
+CREATE TABLE `mryv00`.`vm_role` ( `Id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT , `Title` VARCHAR(120) NOT NULL , PRIMARY KEY (`Id`)) ENGINE = InnoDB;
+INSERT INTO `vm_role` (`Id`, `Title`) VALUES (NULL, 'Správce'), (NULL, 'Zákazník');
+
+CREATE TABLE `mryv00`.`vm_user` ( `Id` INT NOT NULL AUTO_INCREMENT , `Email` VARCHAR(250) NOT NULL , `HashedPassword` VARCHAR(250) NOT NULL , `RoleId` SMALLINT UNSIGNED NOT NULL , `GoogleId` VARCHAR(250) NOT NULL , PRIMARY KEY (`Id`)) ENGINE = InnoDB;
+
+ALTER TABLE `vm_user` CHANGE `GoogleId` `GoogleId` VARCHAR(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_czech_ci NULL;
+
+CREATE TABLE `mryv00`.`vm_product` ( `Id` INT NOT NULL AUTO_INCREMENT , `Title` INT NOT NULL , `Description` TEXT NULL ,  PRIMARY KEY (`Id`)) ENGINE = InnoDB;
+
+CREATE TABLE `mryv00`.`vm_order` ( `Id` MEDIUMINT NOT NULL AUTO_INCREMENT , `CustomerId` MEDIUMINT NOT NULL , `InsertTime` TIMESTAMP NOT NULL , `Status` TINYINT UNSIGNED NOT NULL , PRIMARY KEY (`Id`)) ENGINE = InnoDB;
+
+CREATE TABLE `mryv00`.`vm_orderDetails` ( `Id` INT NOT NULL , `OrderId` MEDIUMINT NOT NULL , `ProductId` MEDIUMINT NOT NULL , `Quantity` TINYINT UNSIGNED NOT NULL ) ENGINE = InnoDB;
+
+CREATE TABLE `mryv00`.`vm_orderStatus` ( `Id` SMALLINT NOT NULL AUTO_INCREMENT , `Title` VARCHAR(120) NOT NULL , PRIMARY KEY (`Id`)) ENGINE = InnoDB;
+
+
+ALTER TABLE `vm_order` ADD CONSTRAINT `fk_order_customer` FOREIGN KEY (`CustomerId`) REFERENCES `vm_user`(`Id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `vm_order` ADD CONSTRAINT `fk_order_status` FOREIGN KEY (`StatusId`) REFERENCES `vm_orderStatus`(`Id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `vm_orderDetails` ADD CONSTRAINT `fk_order_orderId` FOREIGN KEY (`OrderId`) REFERENCES `vm_order`(`Id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `vm_orderDetails` ADD CONSTRAINT `fk_order_productId` FOREIGN KEY (`ProductId`) REFERENCES `vm_product`(`Id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `vm_user` ADD CONSTRAINT `fk_user_role` FOREIGN KEY (`RoleId`) REFERENCES `vm_role`(`Id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+INSERT INTO `vm_user` (`Id`, `Email`, `HashedPassword`, `RoleId`, `GoogleId`) VALUES (NULL, 'mryv00@vse.cz', 'texas', '1', NULL), (NULL, 'afatoga@gmail.com', 'texas', '2', NULL)
+
+ALTER TABLE `vm_orderDetails` ADD `Price` INT(11) NOT NULL AFTER `Quantity`;
+
+ALTER TABLE `vm_user`  ADD `Name` VARCHAR(150) NULL  AFTER `GoogleId`,  ADD `Surname` VARCHAR(150) NULL  AFTER `Name`,  ADD `Address` VARCHAR(300) NULL  AFTER `Surname`,  ADD `City` VARCHAR(100) NULL  AFTER `Address`,  ADD `Zip` INT NULL  AFTER `City`, ADD `Country` VARCHAR(20) NULL AFTER `Zip`;
