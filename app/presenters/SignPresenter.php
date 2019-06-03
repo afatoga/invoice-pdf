@@ -60,11 +60,14 @@ final class SignPresenter extends Nette\Application\UI\Presenter
     protected function createComponentSignUpForm(): Form
     {
         $form = new Form;
+        $form->addProtection();
         $form->addEmail('email', 'E-mail:')
             ->setRequired('Prosím vyplňte svůj email.');
 
         $form->addPassword('password', 'Heslo:')
-            ->setRequired('Prosím vyplňte své heslo.');
+            ->setRequired('Prosím vyplňte své heslo.')
+            //->addRule(Form::MIN_LENGTH, 'Heslo nesmí být kratší než %d znaků', 6)
+            ->addRule(Form::PATTERN, 'Heslo nevalidní, musí mít 8 znaků, nejméně 1 číslo a 1 písmeno', '^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$');
 
         $form->addPassword('passwordVerify', 'Heslo (vyplňte znovu):')
             ->setRequired('Prosím vyplňte své heslo znovu.')
