@@ -1,11 +1,11 @@
 {block title}
     <title>Detail objednávky</title>
 {/block}
-
+        
 {block content}
-
+<h1>Objednávka č. {$orderId}</h1>
     {if !empty($order)}
-    <h1>Objednávka č. {$orderId}</h1>
+    
 
     {if $orderStatusId == 3}<p class="text-danger">Objednávka je stornovaná.</p>{/if}
 
@@ -53,7 +53,6 @@
 
 {block rightSidebar}
     {if $user->isInRole('admin')}<h2 class='pb-4'>Přidat položku</h2>
-    
         {control addProductItemForm}
     <br />
     {/if}
@@ -61,5 +60,10 @@
     <h2>Operace s fakturami</h2>
     <a class="btn btn-secondary btn-md" href="{link Order:getpdf $orderId}" >Zobrazit pdf</a>
     <a class="btn btn-primary btn-md" href="{link Order:getpdf $orderId, 'send'}" >Odeslat pdf na email</a>
+    {/if}
+    
+    {if !empty($orderFilePath)}
+    <h2>Přiložený soubor</h2>
+    <a class="btn btn-secondary btn-md" href="{link Order:getfile $orderId, $orderFilePath}">Stáhnout přiložený soubor</a>
     {/if}
 {/block}

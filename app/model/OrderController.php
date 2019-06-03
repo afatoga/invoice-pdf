@@ -39,7 +39,7 @@ class OrderController
 
     public function getOrder(int $orderId): ?object
     {
-        $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, vm_order.StatusId, vm_user.Email
+        $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, vm_order.CustomerId, vm_order.StatusId, vm_order.AttachedFile, vm_user.Email
                                 FROM vm_order
                                 LEFT OUTER JOIN vm_user ON vm_order.CustomerId = vm_user.Id
                                 WHERE vm_order.Id = ?', $orderId);

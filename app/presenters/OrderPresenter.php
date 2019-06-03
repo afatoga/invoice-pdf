@@ -9,6 +9,7 @@ use Nette\Application\UI\Form;
 use App\Model\OrderController;
 use App\Model\ProductController;
 use App\Model\UserController;
+use Nette\Http\FileUpload;	
 use App\Model\Registrator;
 use App\Model\PDFOutputController;
 use \Joseki\Application\Responses\PdfResponse;
@@ -72,7 +73,7 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
 
             //nacteni polozek
             $sql = $this->database->query('SELECT vm_order.Id, vm_order.InsertTime, 
-                            vm_order.StatusId, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.Id AS `OrderItemId`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
+                            vm_order.StatusId, vm_order.AttachedFile, vm_orderStatus.Title AS `StatusTitle`, vm_orderDetails.Id AS `OrderItemId`, vm_orderDetails.ProductId, vm_orderDetails.Quantity, vm_orderDetails.Price,
                             vm_product.Title, vm_product.Description, vm_product.Title AS `ProductTitle` 
                             FROM vm_order
                             INNER JOIN vm_orderDetails ON vm_order.Id = vm_orderDetails.OrderId 
@@ -88,14 +89,25 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                   $orderTotalPrice += $detail['Price']*$detail['Quantity'];
                 }
 
-                $order = $orderController->getOrder($id);
+                
                 $this->template->orderStatusId = $order->StatusId;
 
                 $this->template->order = $orderDetails;
                 $this->template->orderTotalPrice = $orderTotalPrice;
+                
+            
 
               
-              } else {
+              }
+              
+              $order = $orderController->getOrder($id);
+              if($order['AttachedFile'] != null) {
+                $this->template->orderFilePath = $order['AttachedFile'];
+              }
+              $this->template->orderId = $order['Id'];
+
+              
+              if (!$sql) {
               $this->flashMessage('Položky objednávky neexistují.', 'alert-warning');
               }            
           }
@@ -212,6 +224,9 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
             ->setRequired('Prosím vyplňte příjmení zákazníka.')
             ->addRule(Form::MAX_LENGTH, 'Příjmení nesmí být delší než %d znaků', 60);
 
+        $form->addUpload('soubor', 'Soubor:')
+             ->setRequired(false);
+
         $form->addSubmit('send', 'Vytvořit');
 
         $form->onSuccess[] = [$this, 'addOrder'];
@@ -242,9 +257,29 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
                                            WHERE Id = ?', $values->name, $values->surname, $customerId);
           }
           
-          //vytvoreni objednavky                              
+          if (isset ($values->soubor)) { //kdyz je soubor skutecne poslan z formu
+
+            $soubor = $values->soubor;
+            $soubor->move("upload/" . $values->soubor->name);
+
+          if($soubor->isOk()) { 
+
+            //prejmenovani souboru
+            $hashedInfo = md5($values->email);
+            $attachedFilePath = 'upload/'.$hashedInfo . '.txt';
+            $soubor->move($attachedFilePath);
+          }  
+            //vytvoreni objednavky                              
+            $sql = $this->database->query('INSERT INTO vm_order (CustomerId, AttachedFile) 
+            VALUES (?,?)', $customerId, $attachedFilePath);
+          }
+          //bez souboru
+          else {
+              //vytvoreni objednavky                              
           $sql = $this->database->query('INSERT INTO vm_order (CustomerId) 
-                                          VALUES (?)', $customerId);
+          VALUES (?)', $customerId);
+          }
+                  
            $this->setView('index');
                               
             if($sql->getRowCount()>0) {
@@ -391,4 +426,28 @@ final class OrderPresenter extends Nette\Application\UI\Presenter
         throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
       }
     }
+
+    public function actionGetfile(string $orderId, ?string $filePath): void
+    {
+      $filePath = __DIR__ . '/../../www/'.$filePath;
+
+        if(file_exists($filePath)) {
+          header('Content-Description: File Transfer');
+          header('Content-Type: application/octet-stream');
+          header('Content-Disposition: attachment; filename="'.basename($filePath).'"');
+          header('Expires: 0');
+          header('Cache-Control: must-revalidate');
+          header('Pragma: public');
+          header('Content-Length: ' . filesize($filePath));
+          flush();
+          readfile($filePath);
+          exit;
+      }
+
+    else{
+      throw new Nette\Application\BadRequestException('Objednávka pro vás není dostupná', 403);
+    }
+      
+    }
+    
 }
