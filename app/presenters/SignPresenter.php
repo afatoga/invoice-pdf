@@ -34,6 +34,15 @@ final class SignPresenter extends Nette\Application\UI\Presenter
         }
     }
 
+    public function renderIn(): void 
+    {    
+        $user = $this->getUser();
+        if ($user->isLoggedIn()) {
+            $this->flashMessage('Jste již přihlášen.', 'alert-warning');
+            $this->redirect('Homepage:default');
+        }
+    }
+
     public function actionOut(): void 
     {   
         $user = $this->getUser();

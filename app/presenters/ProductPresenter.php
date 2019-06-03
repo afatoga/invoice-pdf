@@ -44,14 +44,17 @@ final class ProductPresenter extends Nette\Application\UI\Presenter
               FROM vm_product
               WHERE Id = ?', $id);
               $product = $sql->fetch();
-                  //nastavim id, ktere nelze zmenit
-                  $this['editProductForm']->getComponent('productId')
-                                          ->setValue($id);
-                  //prirazeni hodnot existujiciho produktu
-                  $this['editProductForm']->setDefaults([
-                                      'title' => $product->Title,
-                                      'description' => $product->Description
-                  ]);
+                  if($product) {
+                            //nastavim id, ktere nelze zmenit
+                            $this['editProductForm']->getComponent('productId')
+                                              ->setValue($id);
+                            //prirazeni hodnot existujiciho produktu
+                            $this['editProductForm']->setDefaults([
+                                          'title' => $product->Title,
+                                          'description' => $product->Description
+                            ]);
+                  }
+                  
               }
               
         }

@@ -14,8 +14,6 @@ session:
 services:
 	router: App\Router\RouterFactory::createRouter
 	authenticator: App\Model\Authenticator
-	cacheStorage: 
-	             factory: Nette\Caching\Storages\DevNullStorage
 
 database:
 	dsn: 'mysql:host=localhost;dbname=mryv00'
